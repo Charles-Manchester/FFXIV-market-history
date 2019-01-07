@@ -1,1 +1,0 @@
-item_dict = {'borax' : '9366', 
