@@ -15,20 +15,6 @@ def main():
 	with open(r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\borax_history.json', 'w+') as write_file:
 		json.dump(b_data, write_file)
 	
-	#Write (new) transaction data to ongoing CSV file
-	with open(r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\borax_history.csv', 'w+', newline='') as f:
-		with f:
-			fnames = ['Purchase Date', 'Price Per Unit', 'Quantity', 'Price Total']
-			marketwriter = csv.DictWriter(f, fieldnames=fnames)    
-			marketwriter.writeheader()
-			for list, entry in (enumerate(reversed(b_data['History']))):
-				print('Transaction', list+1)
-				print('Price Per Unit', entry['PricePerUnit'])
-				print('Price Total', entry['PriceTotal'],)
-				print('Quantity', entry['Quantity'],)
-				print('Purchase Date', entry['PurchaseDate'], '\n')
-				marketwriter.writerow({'Purchase Date' : entry['PurchaseDate'], 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal']})
-	
 	# read a text file as a list of lines
 	# find the last line, print it
 	# lazy implementation to find last line (will be s l o w on larger files, but works for us to read whole file into memory)
@@ -36,7 +22,29 @@ def main():
 		list = f.readlines()
 		print('The last line is:')
 		print(list[-1])
+		print('The last line time value is:')
+		text = list[-1].split(',', 1)[0]
+		print(text, '\n')
 	
+	#Write (new) transaction data to ongoing CSV file
+	#Test if any of our grabbed transactions are at a later date than our most current one in csv, and adds them to the csv
+	with open(r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\borax_history.csv', 'a', newline='') as f:
+		with f:
+			fnames = ['Purchase Date', 'Price Per Unit', 'Quantity', 'Price Total']
+			marketwriter = csv.DictWriter(f, fieldnames=fnames)    
+			#marketwriter.writeheader()
+			for list, entry in (enumerate(reversed(b_data['History']))):
+				if entry['PurchaseDate'] > int(text):
+					print('Transaction', list+1)
+					print('Price Per Unit', entry['PricePerUnit'])
+					print('Price Total', entry['PriceTotal'],)
+					print('Quantity', entry['Quantity'],)
+					print('Purchase Date', entry['PurchaseDate'], '\n')
+					marketwriter.writerow({'Purchase Date' : entry['PurchaseDate'], 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal']})
+				else:
+					print('Transcation', list+1, 'from JSON is already processed')
+		
+	print()
 	print('Running UNIX Time Conversion Test On First Transaction', '\n')
 	dict = b_data['History'][0]
 	test_time = int(dict['PurchaseDate'])
