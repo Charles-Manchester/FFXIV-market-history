@@ -1,0 +1,1 @@
+item_dict = {'borax' : '9366', 'raziqsap' : '9369', 'hardened sap' : '5532'}
