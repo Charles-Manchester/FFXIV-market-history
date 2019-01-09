@@ -5,13 +5,14 @@ import csv
 from itemdict import item_dict
 from apikey import api_key
 from datetime import datetime
+from filepath import desktop, laptop
 
 # Method that takes item name as input, grabs it's JSON data and writes to a local file. item names not in dict are rejected, see itemdict.py for acceptable items
 # Return: JSON transaction data for input item
 def get_data(item):
     temp_item = item.lower()
     f_request = None
-    f_path = r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\{0}_history.json'.format(temp_item)
+    f_path = r'{0}\{1}_history.json'.format(laptop, temp_item)
     j_path = 'https://xivapi.com/market/adamantoise/items/{0}/history?key={1}&columns=History.*19.PricePerUnit,History.*19.PriceTotal,History.*19.PurchaseDate,History.*19.Quantity'.format(item_dict[temp_item], api_key)
     response = requests.get(j_path)
     data = response.json()
@@ -23,7 +24,7 @@ def get_data(item):
 def new_sheet(item):
     temp_item = item.lower()
     j_data = get_data(temp_item)
-    f_path = r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\{0}_history.csv'.format(temp_item)
+    f_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
     with open(f_path, 'w+', newline='') as write_file:
         with write_file:
             fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total']
@@ -45,7 +46,7 @@ def new_sheet(item):
 def update_sheet(item):
     temp_item = item.lower()  
     j_data = get_data(temp_item)
-    f_path = r'C:\Users\gogge\Documents\GitHub\FFXIV-market-history\{0}_history.csv'.format(temp_item)
+    f_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
     
     with open (f_path,'r' ) as read_file:
         list = read_file.readlines()
