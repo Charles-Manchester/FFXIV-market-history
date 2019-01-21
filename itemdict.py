@@ -10,4 +10,9 @@ item_dict = {'borax' :                  '9366',
             'g.a. wax' :               '24248', 
             'stardust cotton yarn' :   '24247',
             'tatara iron sand' :       '24246',
-            'g.a. carbon rods' :       '24245'}
+            'g.a. carbon rods' :       '24245',
+            'high-gloss urushi' :      '24249',
+            'heaven\'s eye vi' :       '18018',
+            'savage aim vi' :          '18019',
+            'savage might vi' :        '18020',
+            'ground sloth pelt' :      '22421'}

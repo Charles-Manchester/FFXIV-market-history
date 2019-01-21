@@ -6,7 +6,7 @@ from itemdict import item_dict
 from apikey import api_key
 from datetime import datetime
 from filepath import desktop, laptop
-
+list_size = 19
 # Method that takes item name as input, grabs it's JSON data and writes to a local file. item names not in dict are rejected, see itemdict.py for acceptable items
 # Return: JSON transaction data for input item
 def get_data(item):
@@ -22,7 +22,8 @@ def get_data(item):
 
 # Create new CSV for item and write the headers + first 20 transactions
 def new_sheet(item):
-    print('Generating New Sheet for ' + item + '\n')
+    print('Generating New Sheet for ' + item)
+    print('---------------------------------------------')
     temp_item = item.lower()
     j_data = get_data(temp_item)
     f_path = r'{0}\{1}_history.csv'.format(desktop, temp_item)
@@ -33,30 +34,33 @@ def new_sheet(item):
             marketwriter.writeheader()
             for list, entry in (enumerate(reversed(j_data['History']))):
                 print('Transaction', list+1, 'is new!')	
-                print('Price Per Unit', entry['PricePerUnit'])
-                print('Price Total', entry['PriceTotal'],)
-                print('Quantity', entry['Quantity'],)
-                print('Purchase Date', entry['PurchaseDate'], '\n')
+                print('Price Per Unit:', entry['PricePerUnit'])
+                print('Price Total:', entry['PriceTotal'],)
+                print('Quantity:', entry['Quantity'],)
+                print('Purchase Date:', entry['PurchaseDate'])
+                print('Character Name:', entry['CharacterName'], '\n')
                 date_time = int(entry['PurchaseDate'])
                 local_timezone = tzlocal.get_localzone()
                 local_time = datetime.fromtimestamp(date_time, local_timezone)
                 marketwriter.writerow({'Purchase Date - POSIX' : entry['PurchaseDate'], 'Purchase Date - Day' : local_time.strftime('%m/%d/%Y'), 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal'], 'Character Name': entry['CharacterName']})
-
+    print()
+    
 # Write (new) transaction data to ongoing CSV file
 # Test if any of our grabbed transactions are at a later date than our most current one in csv, and adds them to the csv
 def update_sheet(item):
-    print('Updating History Sheet for ' + item + '\n')
+    print('Updating History Sheet for ' + item)
+    print('---------------------------------------------')
     temp_item = item.lower()  
     j_data = get_data(temp_item)
     f_path = r'{0}\{1}_history.csv'.format(desktop, temp_item)
     
     with open (f_path,'r' ) as read_file:
         list = read_file.readlines()
-        print('The last line is:')
-        print(list[-1])
-        print('The last line time value is:')
+        #print('The last line is:')
+        #print(list[-1])
+        #print('The last line time value is:')
         text = list[-1].split(',', 1)[0]
-        print(text, '\n')
+        #print(text, '\n')
         
     with open(f_path, 'a', newline='') as write_file:
         with write_file:
@@ -65,46 +69,41 @@ def update_sheet(item):
             #marketwriter.writeheader()
             for list, entry in (enumerate(reversed(j_data['History']))):
                 if entry['PurchaseDate'] > int(text):
-                    print('Transaction', list+1, 'is new!')	
-                    print('Price Per Unit', entry['PricePerUnit'])
-                    print('Price Total', entry['PriceTotal'],)
-                    print('Quantity', entry['Quantity'],)
-                    print('Purchase Date', entry['PurchaseDate'], '\n')
-                    print('Character Name', entry['CharacterName'], '\n')
+                    print('Transaction:', list+1, 'is new!')	
+                    print('Price Per Unit:', entry['PricePerUnit'])
+                    print('Price Total:', entry['PriceTotal'],)
+                    print('Quantity:', entry['Quantity'],)
+                    print('Purchase Date:', entry['PurchaseDate'],)
+                    print('Character Name:', entry['CharacterName'], '\n')
                     date_time = int(entry['PurchaseDate'])
                     local_timezone = tzlocal.get_localzone()
                     local_time = datetime.fromtimestamp(date_time, local_timezone)
                     marketwriter.writerow({'Purchase Date - POSIX' : entry['PurchaseDate'], 'Purchase Date - Day' : local_time.strftime('%m/%d/%Y'), 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal'], 'Character Name': entry['CharacterName']})
                 else:
-                    print('Transcation', list+1, 'from JSON is already processed')
-        
+                    if list == list_size:
+                        print('No New Transactions')
+                    #print('Transcation', list+1, 'from JSON is already processed')
+    print()
+    
 def main():
-    print('Running Borax History Test\n')
     update_sheet('Borax')
-    print('\nRunning Raziqsap History Test')
     update_sheet('Raziqsap')
-    print('\nRunning Hardened Sap History Test')
     update_sheet('Hardened Sap')
-    print('Running Coke History Test\n')
     update_sheet('Coke')
-    print('\nRunning Patrified Log History Test')
     update_sheet('Petrified Log')
-    print('\nRunning Scheelite History Test')
     update_sheet('Scheelite')
-    print('Running Cashmere Fleece History Test\n')
     update_sheet('Cashmere Fleece')
-    print('\nRunning Raziqsand History Test')
     update_sheet('Raziqsand')
-    print('\nRunning Procoptodon Skin History Test')
     update_sheet('Procoptodon Skin')
-    print('\nRunning Gyr Abanian Wax History Test')
     update_sheet('g.a. wax')
-    print('Running Stardust Cotton Yarn History Test\n')
     update_sheet('Stardust Cotton Yarn')
-    print('\nRunning Tatara Iron Sand History Test')
     update_sheet('Tatara Iron Sand')
-    print('\nRunning Gyr Abanian Carbon Rods History Test')
     update_sheet('g.a. carbon rods')
+    update_sheet('High-gloss Urushi')
+    update_sheet('Heaven\'s Eye VI')
+    update_sheet('Savage Aim VI')
+    update_sheet('Savage Might VI')
+    update_sheet('Ground Sloth Pelt')
 
     # print('Running UNIX Time Conversion Test On First Transaction', '\n')
     # dict = b_data['History'][0]
