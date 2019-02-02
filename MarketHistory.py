@@ -13,24 +13,15 @@ def new_sheet(item):
     print('Generating New Sheet for ' + item)
     print('---------------------------------------------')
     temp_item = item.lower()
-    j_data = get_data(temp_item)
+    json_data = get_data(temp_item)
     file_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
     with open(file_path, 'w+', newline='') as write_file:
         with write_file:
             fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total', 'Character Name']
             marketwriter = csv.DictWriter(write_file, fieldnames=fnames)    
             marketwriter.writeheader()
-            for list, entry in (enumerate(reversed(j_data['History']))):
-                print('Transaction', list+1, 'is new!')	
-                print('Price Per Unit:', entry['PricePerUnit'])
-                print('Price Total:', entry['PriceTotal'],)
-                print('Quantity:', entry['Quantity'],)
-                print('Purchase Date:', entry['PurchaseDate'])
-                print('Character Name:', entry['CharacterName'], '\n')
-                date_time = int(entry['PurchaseDate'])
-                local_timezone = tzlocal.get_localzone()
-                local_time = datetime.fromtimestamp(date_time, local_timezone)
-                marketwriter.writerow({'Purchase Date - POSIX' : entry['PurchaseDate'], 'Purchase Date - Day' : local_time.strftime('%m/%d/%Y'), 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal'], 'Character Name': entry['CharacterName']})
+            for transaction, data in (enumerate(reversed(json_data['History']))):
+                add_transaction(transaction, data, write_file)
     print()
     
 # Write (new) transaction data to ongoing CSV file
@@ -39,37 +30,20 @@ def update_sheet(item):
     print('Updating History Sheet for ' + item)
     print('---------------------------------------------')
     temp_item = item.lower()  
-    j_data = get_data(temp_item)
+    json_data = get_data(temp_item)
     file_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
     
     with open (file_path,'r' ) as read_file:
         list = read_file.readlines()
-        #print('The last line is:')
-        #print(list[-1])
-        #print('The last line time value is:')
         last_purchase = list[-1].split(',', 1)[0]
-        #print(text, '\n')
         
     with open(file_path, 'a', newline='') as write_file:
-        with write_file:
-            fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total', 'Character Name']
-            marketwriter = csv.DictWriter(write_file, fieldnames=fnames)    
-            #marketwriter.writeheader()
-            for list, entry in (enumerate(reversed(j_data['History']))):
-                if entry['PurchaseDate'] > int(last_purchase):
-                    print('Transaction:', list+1, 'is new!')	
-                    print('Price Per Unit:', entry['PricePerUnit'])
-                    print('Price Total:', entry['PriceTotal'],)
-                    print('Quantity:', entry['Quantity'],)
-                    print('Purchase Date:', entry['PurchaseDate'],)
-                    print('Character Name:', entry['CharacterName'], '\n')
-                    date_time = int(entry['PurchaseDate'])
-                    local_timezone = tzlocal.get_localzone()
-                    local_time = datetime.fromtimestamp(date_time, local_timezone)
-                    marketwriter.writerow({'Purchase Date - POSIX' : entry['PurchaseDate'], 'Purchase Date - Day' : local_time.strftime('%m/%d/%Y'), 'Price Per Unit' : entry['PricePerUnit'], 'Quantity' : entry['Quantity'], 'Price Total' : entry['PriceTotal'], 'Character Name': entry['CharacterName']})
-                else:
-                    if list == list_size:
-                        print('No New Transactions')
+        with write_file:  
+            for transaction, data in (enumerate(reversed(json_data['History']))):
+                if data['PurchaseDate'] > int(last_purchase):
+                    add_transaction(transaction, data, write_file)
+                elif transaction == list_size:
+                    print('No New Transactions')
     print()
 
 #def update_gsheet(item):
@@ -78,13 +52,27 @@ def update_sheet(item):
 def get_data(item):
     temp_item = item.lower()
     file_path = r'{0}\{1}_history.json'.format(laptop, temp_item)
-    j_path = 'https://xivapi.com/market/adamantoise/items/{0}/history?key={1}&columns=History.*19.PricePerUnit,History.*19.PriceTotal,History.*19.PurchaseDate,History.*19.Quantity,History.*19.CharacterName'.format(item_dict[temp_item], api_key)
-    response = requests.get(j_path)
+    json_request = 'https://xivapi.com/market/adamantoise/items/{0}/history?key={1}&columns=History.*19.PricePerUnit,History.*19.PriceTotal,History.*19.PurchaseDate,History.*19.Quantity,History.*19.CharacterName'.format(item_dict[temp_item], api_key)
+    response = requests.get(json_request)
     data = response.json()
     with open(file_path, 'w+') as write_file:
         json.dump(data, write_file)
     return data;
-
+    
+def add_transaction(number, data, write_file):
+        fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total', 'Character Name']
+        marketwriter = csv.DictWriter(write_file, fieldnames=fnames)  
+        print('Transaction:', number+1, 'is new!')	
+        print('Price Per Unit:', data['PricePerUnit'])
+        print('Price Total:', data['PriceTotal'],)
+        print('Quantity:', data['Quantity'],)
+        print('Purchase Date:', data['PurchaseDate'],)
+        print('Character Name:', data['CharacterName'], '\n')
+        date_time = int(data['PurchaseDate'])
+        local_timezone = tzlocal.get_localzone()
+        local_time = datetime.fromtimestamp(date_time, local_timezone)
+        marketwriter.writerow({'Purchase Date - POSIX' : data['PurchaseDate'], 'Purchase Date - Day' : local_time.strftime('%m/%d/%Y'), 'Price Per Unit' : data['PricePerUnit'], 'Quantity' : data['Quantity'], 'Price Total' : data['PriceTotal'], 'Character Name': data['CharacterName']})
+            
 def main():
     for key in item_dict.keys():
         update_sheet(key)
@@ -99,8 +87,6 @@ def main():
 
     # print('Local Time (Date):', local_time.strftime('%m/%d/%Y'))
     # print('Local Time (Time):', local_time.strftime('%H:%M:%S'))
-
-    # print()
 
     print('\nProgram Exit')
 	
