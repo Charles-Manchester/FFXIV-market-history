@@ -7,18 +7,6 @@ from apikey import api_key
 from datetime import datetime
 from filepath import desktop, laptop
 list_size = 19
-# Method that takes item name as input, grabs it's JSON data and writes to a local file. item names not in dict are rejected, see itemdict.py for acceptable items
-# Return: JSON transaction data for input item
-def get_data(item):
-    temp_item = item.lower()
-    f_request = None
-    f_path = r'{0}\{1}_history.json'.format(desktop, temp_item)
-    j_path = 'https://xivapi.com/market/adamantoise/items/{0}/history?key={1}&columns=History.*19.PricePerUnit,History.*19.PriceTotal,History.*19.PurchaseDate,History.*19.Quantity,History.*19.CharacterName'.format(item_dict[temp_item], api_key)
-    response = requests.get(j_path)
-    data = response.json()
-    with open(f_path, 'w+') as write_file:
-        json.dump(data, write_file)
-    return data;
 
 # Create new CSV for item and write the headers + first 20 transactions
 def new_sheet(item):
@@ -26,8 +14,8 @@ def new_sheet(item):
     print('---------------------------------------------')
     temp_item = item.lower()
     j_data = get_data(temp_item)
-    f_path = r'{0}\{1}_history.csv'.format(desktop, temp_item)
-    with open(f_path, 'w+', newline='') as write_file:
+    file_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
+    with open(file_path, 'w+', newline='') as write_file:
         with write_file:
             fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total', 'Character Name']
             marketwriter = csv.DictWriter(write_file, fieldnames=fnames)    
@@ -52,23 +40,23 @@ def update_sheet(item):
     print('---------------------------------------------')
     temp_item = item.lower()  
     j_data = get_data(temp_item)
-    f_path = r'{0}\{1}_history.csv'.format(desktop, temp_item)
+    file_path = r'{0}\{1}_history.csv'.format(laptop, temp_item)
     
-    with open (f_path,'r' ) as read_file:
+    with open (file_path,'r' ) as read_file:
         list = read_file.readlines()
         #print('The last line is:')
         #print(list[-1])
         #print('The last line time value is:')
-        text = list[-1].split(',', 1)[0]
+        last_purchase = list[-1].split(',', 1)[0]
         #print(text, '\n')
         
-    with open(f_path, 'a', newline='') as write_file:
+    with open(file_path, 'a', newline='') as write_file:
         with write_file:
             fnames = ['Purchase Date - POSIX', 'Purchase Date - Day', 'Price Per Unit', 'Quantity', 'Price Total', 'Character Name']
             marketwriter = csv.DictWriter(write_file, fieldnames=fnames)    
             #marketwriter.writeheader()
             for list, entry in (enumerate(reversed(j_data['History']))):
-                if entry['PurchaseDate'] > int(text):
+                if entry['PurchaseDate'] > int(last_purchase):
                     print('Transaction:', list+1, 'is new!')	
                     print('Price Per Unit:', entry['PricePerUnit'])
                     print('Price Total:', entry['PriceTotal'],)
@@ -82,28 +70,25 @@ def update_sheet(item):
                 else:
                     if list == list_size:
                         print('No New Transactions')
-                    #print('Transcation', list+1, 'from JSON is already processed')
     print()
-    
+
+#def update_gsheet(item):
+
+# Return: JSON transaction data for input item
+def get_data(item):
+    temp_item = item.lower()
+    file_path = r'{0}\{1}_history.json'.format(laptop, temp_item)
+    j_path = 'https://xivapi.com/market/adamantoise/items/{0}/history?key={1}&columns=History.*19.PricePerUnit,History.*19.PriceTotal,History.*19.PurchaseDate,History.*19.Quantity,History.*19.CharacterName'.format(item_dict[temp_item], api_key)
+    response = requests.get(j_path)
+    data = response.json()
+    with open(file_path, 'w+') as write_file:
+        json.dump(data, write_file)
+    return data;
+
 def main():
-    update_sheet('Borax')
-    update_sheet('Raziqsap')
-    update_sheet('Hardened Sap')
-    update_sheet('Coke')
-    update_sheet('Petrified Log')
-    update_sheet('Scheelite')
-    update_sheet('Cashmere Fleece')
-    update_sheet('Raziqsand')
-    update_sheet('Procoptodon Skin')
-    update_sheet('g.a. wax')
-    update_sheet('Stardust Cotton Yarn')
-    update_sheet('Tatara Iron Sand')
-    update_sheet('g.a. carbon rods')
-    update_sheet('High-gloss Urushi')
-    update_sheet('Heaven\'s Eye VI')
-    update_sheet('Savage Aim VI')
-    update_sheet('Savage Might VI')
-    update_sheet('Ground Sloth Pelt')
+    for key in item_dict.keys():
+        update_sheet(key)
+        #update_gsheet(key)
 
     # print('Running UNIX Time Conversion Test On First Transaction', '\n')
     # dict = b_data['History'][0]

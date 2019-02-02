@@ -24,3 +24,7 @@ $RECYCLE.BIN/
 *.json
 *.csv
 borax_history.csv
+apikey.py
+SheetAverager.py
+SheetAverager.py
+*.pyc
