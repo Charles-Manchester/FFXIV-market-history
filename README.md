@@ -1,5 +1,5 @@
 # FFXIV Market History Creator
-Personal in-progress project designed to load and store price history in CSV's to give me data past the limited transaction history stored by Square Enix's servers. Additional integration with Google Sheets API to come.
+Personal in-progress project designed to load and store price history in CSV's to give me data past the limited transaction history stored by Square Enix's servers. Now running on an RPi somewhere in my office.
 Built to enable market tomfoolery.
 
 Big thanks to the folks over at XIVAPI: Vekien, aka Premium Virtue (Phoenix)
